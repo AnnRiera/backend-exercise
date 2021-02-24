@@ -1,5 +1,5 @@
 # backend-exercise
-A little exercise using a Star Wars API [swapi.dev](https://swapi.dev/)
+A little exercise using a [Star Wars API](https://swapi.dev/)
 
 ## Goal
 We want to know that you can: 
