@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const utils = require('../utils');
+const axios = require('axios');
 
 router.use('/people/:sortBy?', async function(req, res) {
     const params = req.params.sortBy !== undefined ? req.params.sortBy : '';
@@ -23,9 +24,20 @@ router.use('/people/:sortBy?', async function(req, res) {
 });
 
 router.use('/planets', async function(req, res) {
-    const planets = await utils.getAllPages('planets');
-    console.log(planets.length);
-    res.send(planets);
+    const all = await utils.getAllPages('planets');
+    const people = await utils.getAllPages('people');
+    const residents = people.map(x => {
+        return { "name": x.name, "url": x.url }
+    });
+    for (const planet of all) {
+        let rsdt = [];
+        for (const resident of planet.residents) {
+            const match_objs = residents.find(resi => resident === resi.url);
+            rsdt.push(match_objs.name);
+        }
+        planet.residents = rsdt;
+    }
+    res.send(all);
 });
 
 module.exports = router;
