@@ -1,20 +1,45 @@
 const router = require('express').Router();
-const utils = require('../utils');
-const axios = require('axios');
+const utils = require('../utils/utils');
 
 router.use('/people/:sortBy?', async function(req, res) {
     const params = req.params.sortBy !== undefined ? req.params.sortBy : '';
-    const people = await utils.getAllPages('people');
+    let people = await utils.getAllPages('people');
     if (params.length > 1) {
         switch(params) {
             case 'name':
                 people.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
                 break;
             case 'height':
-                people.sort((a,b) => (a.height > b.height) ? 1 : ((b.height > a.height) ? -1 : 0));
+                people = people.map(i => {
+                    i.height = i.height.replace(/unknown/,"0");
+                    return i;
+                });
+                people.sort((a,b) => a.height - b.height);
+                people.forEach(x => {
+                    if (x.height === "0") {
+                        x.height = "unknown";
+                    }
+                });
                 break;
             case 'mass':
-                people.sort((a,b) => (a.mass > b.mass) ? 1 : ((b.mass > a.mass) ? -1 : 0));
+                let highMass = '';
+                people = people.map(i => {
+                    if (i.mass.includes(',') == true) {
+                        highMass = i.mass;
+                    }
+                    i.mass = i.mass.replace(/,/g,'');
+                    i.mass = i.mass.replace(/unknown/,"0");
+                    return i;
+                });
+                people.sort((a,b) => a.mass - b.mass);
+                people.forEach(x => {
+                    if (x.mass === "0") {
+                        x.mass = "unknown";
+                    }
+                    if (x.name.indexOf('Jabba') !== -1) {
+                        x.mass = highMass;
+                    }
+                });
                 break;
             default:
                 break;
